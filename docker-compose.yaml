@@ -4,21 +4,12 @@ networks:
   loki:
 
 services:
-  node-app:
-    build: ./app
-    container_name: node-app
-    labels:
-      job: "node-app"
-    restart: always
-    networks:
-      - loki
-
   loki:
     image: grafana/loki:3.4.1
     ports:
       - "3100:3100"
     volumes:
-      - ./config:/mnt/config
+      - ./config:/mnt/config # 將 config 資料夾掛載到容器中
     command: -config.file=/mnt/config/loki-config.yaml
     networks:
       - loki
@@ -27,7 +18,7 @@ services:
     image: grafana/promtail:3.4.1
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./config:/mnt/config
+      - ./config:/mnt/config # 將 config 資料夾掛載到容器中
     command: -config.file=/mnt/config/promtail-config.yaml
     networks:
       - loki
@@ -37,9 +28,18 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=admin # 將帳號設定為 admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin # 將密碼設定為 admin
     depends_on:
       - loki
+    networks:
+      - loki
+
+  node-app:
+    build: ./app
+    container_name: node-app
+    labels:
+      job: "node-app"
+    restart: always
     networks:
       - loki
